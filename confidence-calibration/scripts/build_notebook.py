@@ -48,6 +48,23 @@ if scores bunch in a narrow band around a threshold, picking a cutoff inside tha
 This notebook answers the three questions, measured rather than guessed. It generates a
 corpus with known-correct values, degrades it from a clean PDF down to a phone photo, and
 watches what happens to the confidence scores as the document gets harder to read.
+
+---
+
+### What it found
+
+| | |
+|---|---|
+| **0.85 is safe on clean documents and not on degraded ones** | 0% error on a clean PDF (288 fields accepted). 43% on a phone photo, where it accepts 30. |
+| **0.97 does not fix that; it stops answering** | 0% error on degraded tiers, but from 4 accepted fields out of 294. The interval on 0-of-4 reaches 49%. |
+| **The two scores are interchangeable** | Separation 0.835 / 0.828 / 0.823, intervals overlapping. `min()` of the pair, which the HITL skill gates on, is no better. |
+| **Degradation flips the bias, not just the noise** | Scanned-and-noisy is *under*confident (-0.26), photographed is *over*confident (+0.07). Only one of those costs you accuracy. |
+| **Money fields break first, text survives** | On a phone photo: money 19% correct, IDs 35%, free text 84%. The fields worth extracting for are the ones that fail. |
+
+Every rate below is reported with a 95% interval, and anything resting on fewer than 30
+observations is marked as such. One consequence worth stating plainly up front: **no tier in
+this corpus demonstrates sub-1% error at 95% confidence**, so question 2 does not get the
+tidy number it asks for.
 """
 )
 
@@ -230,6 +247,11 @@ md(
 Unsiloed's own HITL skill gates on `min(grounding_score, extraction_score)`. Is that better
 than using either score alone? Measured as separation: given one correct field and one
 incorrect field, how often does the correct one score higher?
+
+Note the scope: this finding uses **both corpora together** (1,176 generated fields and 1,096
+CORD fields), because ranking two scores against each other benefits from every observation
+available and should not depend on one corpus. Findings 2 through 5 below use the generated
+corpus only, since they turn on the degradation tiers, which CORD does not have.
 """
 )
 
@@ -241,10 +263,15 @@ Image.open(RESULTS / "figures" / "01_score_discrimination.png")
 
 md(
     """
-**All three are equivalent**, within noise. `grounding_score` and `extraction_score` answer
-different questions — was the value located, was it read correctly once located — but
-neither is more trustworthy than the other for the single decision that matters
-operationally: should this value be trusted without a human looking at it?
+**All three are equivalent.** The point estimates differ (0.835, 0.828, 0.823) but the 95%
+bootstrap intervals overlap almost entirely: [0.810, 0.862], [0.802, 0.857], [0.794, 0.852].
+Ranking them on those point estimates would be reading noise.
+
+`grounding_score` and `extraction_score` answer different questions — was the value located,
+was it read correctly once located — but neither is more trustworthy than the other for the
+single decision that matters operationally: should this value be trusted without a human
+looking at it? Notably `min(grounding, extraction)`, which the HITL skill gates on, is not
+better than either score alone.
 """
 )
 
@@ -253,9 +280,11 @@ md(
 ## 8. Finding 2 — Are the Scores Calibrated?
 
 A confidence score is calibrated if 0.9 confidence really does mean "90% of the time, this
-is correct." The reliability diagram plots mean confidence in a bucket against how often
-fields in that bucket were actually correct, one line per tier. A perfectly calibrated score
-sits on the diagonal.
+is correct." The right panel plots mean confidence in a bucket against how often fields in
+that bucket were actually correct. A perfectly calibrated score sits on the diagonal.
+
+The left panel has to come first, though, because it explains why two of the four tiers have
+no curve at all.
 """
 )
 
@@ -267,11 +296,35 @@ Image.open(RESULTS / "figures" / "02_reliability_grounding.png")
 
 md(
     """
-**T0 and T1 hug the diagonal.** On clean and scanned documents, the score means what it
-claims to mean. **T2 drifts, and T3 is badly miscalibrated** — a 0.4 confidence on a
-photographed document does not carry the same meaning as a 0.4 on a clean PDF. The score is
-still informative (higher generally means more likely correct — see Finding 1) but the
-*number itself* stops being trustworthy as a probability once the document degrades enough.
+The left panel is the whole finding in one picture. Grey is how sure the score said it was;
+blue is how often it was actually right. On the first three tiers blue is at least as tall as
+grey, which is fine — the score is either honest or too modest. On T3 grey is taller. It
+claimed 60% and delivered 52%.
+
+**On T0 and T1 the score barely varies at all.** 288 of 294 clean-document fields land in a
+single 0.9-1.0 bucket, and 289 of 294 scanned ones do. There is no calibration *curve* for
+those tiers because there is nothing to curve, which is why they show up as single markers on
+the right panel rather than lines. The score is trivially honest there: it says ~0.99 and it
+is right ~99% of the time.
+
+The scores only start to spread once the document degrades, and when they do, they are wrong
+in two different directions:
+
+- **T2 sits above the diagonal** — it is *under*confident. Fields scoring 0.57 were correct
+  96% of the time. Trusting the number costs you coverage you did not need to give up.
+- **T3 sits below it** — it is *over*confident. Fields scoring 0.86 were correct 69% of the
+  time, and the Wilson intervals are wide enough that even that estimate is loose.
+
+So degradation does not just add noise to the score. It flips the direction of the bias. A
+0.86 means "better than it claims" on a noisy scan and "worse than it claims" on a phone
+photo, which is precisely why one global threshold cannot serve both.
+
+That direction is also why `results/calibration_error.csv` needs reading with care. Expected
+calibration error takes an absolute value, so it scores T2 at 0.26 and T3 at 0.10 — ranking
+T2 as the worse tier. But T2's gap is underconfidence, which costs coverage you did not need
+to give up, while T3's smaller gap is overconfidence, which ships wrong values as correct.
+The `signed_error` column is in that table for exactly this reason: for an accept/reject
+decision, only one sign actually hurts you.
 """
 )
 
@@ -298,12 +351,28 @@ pd.read_csv(RESULTS / "sub_1pct_thresholds.csv")
 
 md(
     """
-On **T0 and T1**, a threshold as low as 0.5 already clears sub-1% error while accepting
-~99% of fields — the scores are so well-behaved that almost no threshold is needed at all.
-On **T2**, sub-1% error needs roughly 0.9, and only accepts ~4-7% of fields at that bar. On
-**T3**, no threshold in the sweep reaches sub-1% error — the miscalibration from Finding 2
-means there is no safe cutoff on badly degraded documents, only a trade-off between coverage
-and risk.
+The honest answer to Unsiloed's second question is: **this corpus cannot demonstrate sub-1%
+error on any tier**, and saying otherwise would be reading the point estimate and ignoring
+the interval.
+
+On **T0 and T1**, a threshold of 0.5 accepts ~99% of fields and gets zero errors out of 291.
+That is as clean as this corpus gets, and its 95% upper bound is still 1.3%. Bounding error
+under 1% needs roughly 300 error-free observations (rule of three), so we are just short.
+Read it as "consistent with sub-1%, not proof of it."
+
+On **T2**, no threshold reaches ≤1% observed error with at least 30 fields accepted. A filter
+that only checked the observed rate would report 0.92 here, but that rests on 13 accepted
+fields out of 294 — enough to look clean, nowhere near enough to support the claim. This is
+why `sub_1pct_thresholds.csv` carries `n_accepted` and a `demonstrated` flag rather than a
+bare threshold.
+
+On **T3**, nothing comes close at any threshold. The overconfidence from Finding 2 means
+there is no safe cutoff on badly degraded documents, only a trade-off between coverage and
+risk.
+
+The useful finding here is not a number. It is that the question "what threshold gets sub-1%
+error" has no answer on degraded documents, and a corpus this size cannot honestly answer it
+even on clean ones.
 """
 )
 
@@ -329,17 +398,80 @@ pd.read_csv(RESULTS / "fixed_thresholds.csv")
 
 md(
     """
-**0.85 is safe on T0 and T1 (0% error) and unsafe everywhere else** — 9% error on T2, over
-40% on T3. **0.97 recovers safety but at a steep coverage cost**, accepting only ~1% of
-fields on T2 and T3. Neither threshold is wrong; each is correct for a document quality it
-was never labelled as being specific to. Treating 0.85 as a universal bar, the way the
-`unsiloed` skill currently does, is the actual bug — not the number itself.
+**0.85 is safe on T0 and T1 and unsafe everywhere else.** 0% error on clean and scanned
+documents, out of 288 and 289 accepted fields respectively, so those zeros are real. Then 9%
+on T2 and 43% on T3.
+
+Two caveats on that 43%, both visible in the figure. It is 13 wrong out of 30 accepted, so
+the 95% interval runs from 27% to 61% — the precise number is soft, though even the floor is
+27 times the 1% target. And 0.85 only accepted 10% of T3 fields in the first place, so this
+is the error rate among the fields it was *most* confident about.
+
+**0.97 cannot be called safe on degraded documents.** It shows 0% error on T2 and T3, but
+from 4 accepted fields out of 294. The Wilson interval on 0-out-of-4 runs to **49%** — those
+are the two tall whiskers rising from nothing on the left panel, where the bar itself has no
+height because the observed error is zero. The data is entirely consistent with 0.97 being as
+dangerous as 0.85 here; there is simply not enough accepted to tell. What the measurement does
+show is that 0.97 stops answering: 1.4% coverage, against 89% on a clean PDF.
+
+So the contrast that matters is not 0.85 versus 0.97. It is that the same printed "0% error"
+means *genuinely safe* at n=288 and *no information at all* at n=4. Treating 0.85 as a
+universal bar, the way the `unsiloed` skill currently does, is the actual bug — not the
+number itself.
 """
 )
 
 md(
     """
-## 11. What This Suggests
+## 11. Finding 5 — Which Fields Break First?
+
+Every finding so far treats a document as one number. It isn't. The damage lands very
+unevenly across field types, and the pattern is the opposite of convenient.
+"""
+)
+
+code(
+    """
+Image.open(RESULTS / "figures" / "05_field_type_accuracy.png")
+"""
+)
+
+code(
+    """
+pd.read_csv(RESULTS / "field_type_accuracy.csv").pivot(
+    index="field_type", columns="tier", values="accuracy"
+).mul(100).round(1)
+"""
+)
+
+md(
+    """
+On a phone photo, **money fields are read correctly 19% of the time while free text holds at
+84%.** IDs land at 35%, dates at 75%. Currency codes never fail at all.
+
+The ordering follows redundancy. `Pellham & Rowe` misread as `Pelham & Rowe` is still
+recognisably the same company, and a currency code has a vocabulary of a few dozen options so
+a damaged glyph is recoverable. An amount has none of that: `2578.64` read as `2578.84` is a
+different number, silently, with nothing in the string to contradict it. Both appear in the
+sample of misses if you inspect `scored_fields.csv`.
+
+This inverts the usual intuition. The fields worth extracting an invoice *for* — the amounts,
+the account numbers — are precisely the ones that degrade first, while the descriptive text
+you care least about survives. An accuracy figure averaged over all fields hides this
+completely: T3 looks like 52% overall, which is neither the 84% you get on text nor the 19%
+you get on money.
+
+**One more thing the data says:** across all four tiers, every one of the 294 ground-truth
+fields came back with a value and a score. The extractor never declined. The only fields it
+left empty were 14 cases across the whole corpus, and it scored every one of those 0.0, so
+they fail any threshold. Total misses are signalled honestly. The danger is entirely in the
+confident-but-wrong middle, which is exactly where a fixed threshold operates.
+"""
+)
+
+md(
+    """
+## 12. What This Suggests
 
 - **Route by document quality, not just by score.** A scanned or photographed document
   needs a stricter threshold than a clean PDF at the *same* nominal confidence — the number
@@ -350,6 +482,10 @@ md(
 - **A single global default (0.85 or 0.97) cannot be correct for every input.** The
   cookbook's own skills should probably ask what kind of document is being processed before
   picking one.
+- **Gate by field type as well as by document.** Money and ID fields on a degraded document
+  are a different risk from free text on the same page (19% vs 84% correct on T3). A skill
+  that routes every field through one number is throwing away the cheapest signal it has, and
+  the field type is known before the call is even made.
 
 ## Limitations
 
@@ -361,9 +497,19 @@ md(
 - **CORD receipts are real but narrow** — Indonesian retail receipts, thermal-printed. They
   validate that miscalibration on hard documents is a real phenomenon, not an artefact of
   synthetic degradation, but the specific numbers may not transfer to, say, financial filings.
+- **Some cells are thin, and the intervals are the honest part.** A high threshold on a
+  degraded tier accepts very little: 0.85 on T3 accepts 30 fields, 0.97 accepts 4. Rates
+  built on those are reported with Wilson intervals and marked unreliable below 30
+  observations (dotted lines in Finding 3) rather than hidden. Read the direction of these
+  findings as solid and the second decimal place as noise. Nothing here demonstrates sub-1%
+  error at 95% confidence on *any* tier — see Finding 3.
 - **Thresholds here are specific to this corpus.** The methodology — generate, degrade,
   measure — is the reusable part; a team should run it against their own documents rather
   than adopt these exact numbers.
+- **Three CORD receipts are missing.** 95 were downloaded, 92 extracted; `receipt_048`
+  through `receipt_050` failed API-side and were never retried. `calibration/run.py` reports
+  failures and is resumable, so re-running retries only those. Counts here say 92 because
+  that is what was measured.
 - **Scores move between runs** as Unsiloed's models change in production. Treat the figures
   as indicative of the *shape* of the finding (thresholds do not travel across document
   quality) rather than as fixed targets.
@@ -374,7 +520,7 @@ md(
 cd confidence-calibration
 python -m corpus.generate     # 12 documents, ~5s
 python -m corpus.degrade      # four tiers, ~10s
-python -m corpus.cord         # 92 receipts, ~3min, needs no API key
+python -m corpus.cord         # 95 receipts, ~3min, needs no API key
 python -m calibration.run     # 140 extractions, ~5min, needs UNSILOED_API_KEY
 python -m calibration.analyse # figures + tables, ~30s, no API calls
 ```
