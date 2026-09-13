@@ -35,7 +35,12 @@ DOCS_DIR = ROOT / "documents"
 CORD_DIR = DOCS_DIR / "cord"
 
 TIER_LABELS = {"t0": "T0 clean PDF", "t1": "T1 scanned", "t2": "T2 scanned+noisy", "t3": "T3 photographed"}
-TIER_COLOR = {"t0": "#1f7a3d", "t1": "#2f6fbd", "t2": "#b8860b", "t3": "#c0392b"}
+# Sampled from unsiloed.ai and its own kyc-app demo rather than picked freehand. The site has
+# no true red anywhere on it (checked): its most alarming tone is a rust that sits at the dark
+# end of its own orange, #FC8108. So degradation is drawn as an intensity ramp within their
+# actual palette (charcoal -> grey -> brand orange -> that rust) instead of a borrowed
+# stoplight red/amber/green that doesn't exist in their identity.
+TIER_COLOR = {"t0": "#242424", "t1": "#8a8a8a", "t2": "#FC8108", "t3": "#C44A0F"}
 # T0 and T1 land on almost identical curves. Without distinct dash patterns one is drawn
 # entirely underneath the other and the figure silently shows three lines for four tiers.
 TIER_STYLE = {"t0": "-", "t1": (0, (4, 2)), "t2": "-", "t3": "-"}
@@ -43,8 +48,9 @@ TIER_STYLE = {"t0": "-", "t1": (0, (4, 2)), "t2": "-", "t3": "-"}
 # Reserved palettes. TIER_COLOR means document quality and nothing else, so figures whose
 # subject is not a tier (the three scores, the two thresholds) use these instead. Reusing the
 # tier colours there made green/blue/gold read as T0/T1/T2 on charts that have no tier axis.
-SCORE_COLOR = "#4c5c96"
-THRESHOLD_COLOR = {0.85: "#7d3c98", 0.97: "#c9a0dc"}
+# #F861A8 is unsiloed.ai's own primary brand accent (their homepage hero, ~90 uses).
+SCORE_COLOR = "#F861A8"
+THRESHOLD_COLOR = {0.85: "#F861A8", 0.97: "#F8A9C8"}
 
 # Below this many observations a rate is noise, not a measurement. At threshold 0.96 the
 # T3 accepted set is 4 fields; plotting its 0% error the same weight as an n=291 point is
@@ -70,14 +76,16 @@ plt.rcParams.update(
     {
         "figure.facecolor": "white",
         "axes.facecolor": "white",
-        "axes.edgecolor": "#444444",
-        "axes.labelcolor": "#222222",
-        "text.color": "#222222",
-        "xtick.color": "#444444",
-        "ytick.color": "#444444",
+        # #242424 is unsiloed.ai's own text colour; #969696 and #E9E9E9 are real neutrals
+        # from the same page rather than generic matplotlib greys.
+        "axes.edgecolor": "#969696",
+        "axes.labelcolor": "#242424",
+        "text.color": "#242424",
+        "xtick.color": "#6b6b6b",
+        "ytick.color": "#6b6b6b",
         "font.size": 11,
         "axes.grid": True,
-        "grid.color": "#e4e4e4",
+        "grid.color": "#E9E9E9",
         "grid.linewidth": 0.7,
     }
 )
@@ -259,8 +267,10 @@ def plot_reliability_diagram(frame: pd.DataFrame, column: str, path: Path, title
 
     x = np.arange(len(tiers))
     width = 0.36
-    ax_plain.bar(x - width / 2, claimed, width, color="#7f8c8d", label="How sure the score said it was")
-    ax_plain.bar(x + width / 2, actual, width, color="#2f6fbd", label="How often it was actually right")
+    # Neutral grey for the claim, brand pink for the measured outcome: pink is the thing this
+    # whole recipe is actually checking, so it gets the colour that draws the eye.
+    ax_plain.bar(x - width / 2, claimed, width, color="#969696", label="How sure the score said it was")
+    ax_plain.bar(x + width / 2, actual, width, color=SCORE_COLOR, label="How often it was actually right")
 
     for xi, (c, a) in enumerate(zip(claimed, actual, strict=True)):
         ax_plain.text(xi - width / 2, c + 1.5, f"{c:.0f}%", ha="center", fontsize=9)
@@ -273,14 +283,16 @@ def plot_reliability_diagram(frame: pd.DataFrame, column: str, path: Path, title
         if c - a > 2:
             ax_plain.annotate(
                 "over-promises\n(dangerous)", xy=(xi, max(c, a)), xytext=(xi, max(c, a) + 14),
-                ha="center", fontsize=8, color="#c0392b", fontweight="bold",
-                arrowprops={"arrowstyle": "->", "color": "#c0392b", "linewidth": 1.2},
+                ha="center", fontsize=8, color=TIER_COLOR["t3"], fontweight="bold",
+                arrowprops={"arrowstyle": "->", "color": TIER_COLOR["t3"], "linewidth": 1.2},
             )
         elif a - c > 2:
             ax_plain.annotate(
                 "under-promises\n(safe, just costly)", xy=(xi, max(c, a)), xytext=(xi, max(c, a) + 14),
-                ha="center", fontsize=8, color="#1f7a3d", fontweight="bold",
-                arrowprops={"arrowstyle": "->", "color": "#1f7a3d", "linewidth": 1.2},
+                # Grey, not green: the brand has no green, and "safe" here just means "no alarm needed",
+                # which the neutral T0 tone says better than an implied stoplight would.
+                ha="center", fontsize=8, color=TIER_COLOR["t0"], fontweight="bold",
+                arrowprops={"arrowstyle": "->", "color": TIER_COLOR["t0"], "linewidth": 1.2},
             )
 
     ax_plain.set_xticks(x, [TIER_LABELS[t] for t in tiers], fontsize=8.5, rotation=12)
@@ -335,8 +347,12 @@ def plot_reliability_diagram(frame: pd.DataFrame, column: str, path: Path, title
                         fontsize=7, color=TIER_COLOR[tier], ha=label_align,
                         xytext=label_offset, textcoords="offset points")
 
-    ax.set_xlim(-0.02, 1.02)
-    ax.set_ylim(-0.02, 1.08)
+    # x stays near [0, 1]: this axis is a score, and padding it out reads as if scores could
+    # exceed 1. The labels already point left (toward lower x), so only y needs headroom: the
+    # T1 label sits above a point at y~0.99 and was landing close enough to the top frame to
+    # look clipped.
+    ax.set_xlim(-0.02, 1.04)
+    ax.set_ylim(-0.02, 1.18)
     ax.set_xlabel("Score it gave (averaged within each band)")
     ax.set_ylabel("How often those were right")
     ax.set_title("Same data, in detail (on the dashed line = honest)")
@@ -541,7 +557,7 @@ def plot_fixed_thresholds(table: pd.DataFrame, path: Path) -> None:
             ax_cov.text(bar.get_x() + bar.get_width() / 2, value + 1.5,
                         f"{value:.0f}%", ha="center", va="bottom", fontsize=7.5)
 
-    ax_err.axhline(1.0, color="#c0392b", linestyle="--", linewidth=1.2, label="1% error target")
+    ax_err.axhline(1.0, color=TIER_COLOR["t3"], linestyle="--", linewidth=1.2, label="1% error target")
     # The whisker reaching to 49% on the 4-field bars is the point of this chart. A reader
     # sharing just the PNG, with no surrounding prose, needs the legend to say what it is.
     ax_err.errorbar([], [], yerr=1, fmt="none", ecolor="#555555", capsize=3,

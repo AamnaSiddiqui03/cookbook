@@ -297,7 +297,7 @@ Image.open(RESULTS / "figures" / "02_reliability_grounding.png")
 md(
     """
 The left panel is the whole finding in one picture. Grey is how sure the score said it was;
-blue is how often it was actually right. On the first three tiers blue is at least as tall as
+pink is how often it was actually right. On the first three tiers pink is at least as tall as
 grey, which is fine — the score is either honest or too modest. On T3 grey is taller. It
 claimed 60% and delivered 52%.
 
