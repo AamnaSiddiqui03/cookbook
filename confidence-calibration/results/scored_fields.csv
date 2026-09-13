@@ -1291,8 +1291,8 @@ cord,receipt_013,receipt,real,line_items[].unit_price,money,43.636,43.636,0.94,0
 cord,receipt_013,receipt,real,line_items[].price,money,43.636,43.636,0.94,0.92,True,0.92
 cord,receipt_013,receipt,real,line_items[].name,text,A.MINERAL GELAS,A.MINERAL GELAS,0.94,0.94,True,0.94
 cord,receipt_013,receipt,real,line_items[].quantity,number,1,1,0.94,0.93,True,0.93
-cord,receipt_013,receipt,real,line_items[].unit_price,money,3.000,"3,000",0.96,0.96,False,0.96
-cord,receipt_013,receipt,real,line_items[].price,money,3.000,"3,000",0.96,0.96,False,0.96
+cord,receipt_013,receipt,real,line_items[].unit_price,money,3.000,"3,000",0.96,0.96,True,0.96
+cord,receipt_013,receipt,real,line_items[].price,money,3.000,"3,000",0.96,0.96,True,0.96
 cord,receipt_014,receipt,real,subtotal_price,money,"238,000","238,000",0.995,0.995,True,0.995
 cord,receipt_014,receipt,real,tax_price,money,"25,585","25,585",0.99,0.99,True,0.99
 cord,receipt_014,receipt,real,service_price,money,"17,850","17,850",0.99,0.99,True,0.99
@@ -1347,7 +1347,7 @@ cord,receipt_016,receipt,real,line_items[].name,text,MINERAL WATER (bundling) 5k
 cord,receipt_016,receipt,real,line_items[].quantity,number,1,1,0.98,0.98,True,0.98
 cord,receipt_016,receipt,real,line_items[].price,money,"4,545","4,545",0.98,0.98,True,0.98
 cord,receipt_017,receipt,real,subtotal_price,money,"91,000","91,000",0.98,0.98,True,0.98
-cord,receipt_017,receipt,real,total_price,money,"91,000","Rp. 91,000",0.99,0.99,False,0.99
+cord,receipt_017,receipt,real,total_price,money,"91,000","Rp. 91,000",0.99,0.99,True,0.99
 cord,receipt_017,receipt,real,credit_card_price,money,"91,000","91,000",0.97,0.97,True,0.97
 cord,receipt_017,receipt,real,line_items[].name,text,Goblin's Mace,Goblin's Mace,0.97,0.97,True,0.97
 cord,receipt_017,receipt,real,line_items[].quantity,number,1,1,0.97,0.97,True,0.97
@@ -1431,11 +1431,16 @@ cord,receipt_023,receipt,real,line_items[].price,money,"54,000","54,000",0.995,0
 cord,receipt_023,receipt,real,line_items[].name,text,REDBEAN BREAD,REDBEAN BREAD,0.97,0.97,True,0.97
 cord,receipt_023,receipt,real,line_items[].quantity,number,1,1,0.97,0.97,True,0.97
 cord,receipt_023,receipt,real,line_items[].price,money,"9,000","9,000",0.97,0.97,True,0.97
+cord,receipt_024,receipt,real,total_price,money,118.000,Rp.118.000,0.98,0.98,True,0.98
 cord,receipt_024,receipt,real,credit_card_price,money,118.000,118.000,0.97,0.97,True,0.97
 cord,receipt_024,receipt,real,line_items[].name,text,5001-Corn Flakes Cookies,5001-Corn Flakes Cookies,0.97,0.97,True,0.97
 cord,receipt_024,receipt,real,line_items[].quantity,number,1,x1,0.95,0.95,True,0.95
+cord,receipt_024,receipt,real,line_items[].unit_price,money,56.000,Rp.56.000,0.97,0.97,True,0.97
+cord,receipt_024,receipt,real,line_items[].price,money,56.000,Rp.56.000,0.97,0.97,True,0.97
 cord,receipt_024,receipt,real,line_items[].name,text,5003-Chokoreto Cookies,5003-Chokoreto Cookies,0.95,0.95,True,0.95
 cord,receipt_024,receipt,real,line_items[].quantity,number,1,x1,0.95,0.95,True,0.95
+cord,receipt_024,receipt,real,line_items[].unit_price,money,62.000,Rp.62.000,0.97,0.97,True,0.97
+cord,receipt_024,receipt,real,line_items[].price,money,62.000,Rp.62.000,0.97,0.97,True,0.97
 cord,receipt_024,receipt,real,line_items[].name,text,6002-Plastic Bag Medium,6002-Plastic Bag Medium,0.97,0.97,True,0.97
 cord,receipt_024,receipt,real,line_items[].quantity,number,1,x1,0.95,0.95,True,0.95
 cord,receipt_024,receipt,real,line_items[].unit_price,money,0,Rp.0,0.97,0.97,True,0.97
@@ -1655,11 +1660,11 @@ cord,receipt_041,receipt,real,line_items[].name,text,Lychee/Peach/Lemon/Mango,Ly
 cord,receipt_041,receipt,real,line_items[].price,money,25974.00,25974.00,0.95,0.95,True,0.95
 cord,receipt_041,receipt,real,line_items[].name,text,Chicken Maryland,Chicken Maryland,0.98,0.98,True,0.98
 cord,receipt_041,receipt,real,line_items[].price,money,47619.00,47619.00,0.98,0.98,True,0.98
-cord,receipt_042,receipt,real,subtotal_price,money,15.000,"15,000",0.98,0.98,False,0.98
-cord,receipt_042,receipt,real,tax_price,money,1.500,"1,500",0.72,0.66,False,0.66
-cord,receipt_042,receipt,real,total_price,money,16.500,"16,500",0.98,0.98,False,0.98
-cord,receipt_042,receipt,real,cash_price,money,50.000,"50,000",0.98,0.98,False,0.98
-cord,receipt_042,receipt,real,change_price,money,33.500,"33,500",0.97,0.95,False,0.95
+cord,receipt_042,receipt,real,subtotal_price,money,15.000,"15,000",0.98,0.98,True,0.98
+cord,receipt_042,receipt,real,tax_price,money,1.500,"1,500",0.72,0.66,True,0.66
+cord,receipt_042,receipt,real,total_price,money,16.500,"16,500",0.98,0.98,True,0.98
+cord,receipt_042,receipt,real,cash_price,money,50.000,"50,000",0.98,0.98,True,0.98
+cord,receipt_042,receipt,real,change_price,money,33.500,"33,500",0.97,0.95,True,0.95
 cord,receipt_042,receipt,real,line_items[].name,text,"Chicken HCC, 1Pcs",Chicken HCC. 1Pcs,0.96,0.96,False,0.96
 cord,receipt_042,receipt,real,line_items[].quantity,number,1,1,0.97,0.97,True,0.97
 cord,receipt_042,receipt,real,line_items[].price,money,15.000,15.000,0.98,0.97,True,0.97
@@ -1679,7 +1684,7 @@ cord,receipt_044,receipt,real,change_price,money,20.000,20.000,0.98,0.97,True,0.
 cord,receipt_044,receipt,real,line_items[].name,text,Combo 1,Combo 1,0.97,0.97,True,0.97
 cord,receipt_044,receipt,real,line_items[].quantity,number,1,1,0.97,0.96,True,0.96
 cord,receipt_044,receipt,real,line_items[].price,money,30.000,30.000,0.98,0.97,True,0.97
-cord,receipt_045,receipt,real,total_price,money,88.000,"88,000",0.98,0.98,False,0.98
+cord,receipt_045,receipt,real,total_price,money,88.000,"88,000",0.98,0.98,True,0.98
 cord,receipt_045,receipt,real,cash_price,money,88.000,88.000,0.98,0.98,True,0.98
 cord,receipt_045,receipt,real,change_price,money,0,0,0.98,0.98,True,0.98
 cord,receipt_045,receipt,real,line_items[].name,text,Lemon Tea (L).,Lemon Tea (L).,0.98,0.98,True,0.98
@@ -1858,7 +1863,7 @@ cord,receipt_061,receipt,real,line_items[].unit_price,money,,5000,,,False,
 cord,receipt_061,receipt,real,line_items[].price,money,"-7,200","5,000",0.72,0.58,False,0.58
 cord,receipt_062,receipt,real,total_price,money,48.000,48.000,0.98,0.98,True,0.98
 cord,receipt_062,receipt,real,cash_price,money,50.000,50.000,0.98,0.98,True,0.98
-cord,receipt_062,receipt,real,change_price,money,2.000,"2,000",0.97,0.97,False,0.97
+cord,receipt_062,receipt,real,change_price,money,2.000,"2,000",0.97,0.97,True,0.97
 cord,receipt_062,receipt,real,line_items[].name,text,XXI Java Tea (M),XXI Java Tea (M),0.97,0.97,True,0.97
 cord,receipt_062,receipt,real,line_items[].quantity,number,1,1,0.97,0.97,True,0.97
 cord,receipt_062,receipt,real,line_items[].price,money,18.000,18.000,0.97,0.97,True,0.97
@@ -2062,7 +2067,7 @@ cord,receipt_080,receipt,real,line_items[].name,text,"Viet Milk Coffee
 +Ice
 +M",Viet Milk Coffee,0.97,0.95,False,0.95
 cord,receipt_080,receipt,real,line_items[].quantity,number,1,1,0.98,0.98,True,0.98
-cord,receipt_080,receipt,real,line_items[].price,money,25.000,"25,000",0.98,0.97,False,0.97
+cord,receipt_080,receipt,real,line_items[].price,money,25.000,"25,000",0.98,0.97,True,0.97
 cord,receipt_080,receipt,real,line_items[].name,text,,+Ice,,,False,
 cord,receipt_080,receipt,real,line_items[].name,text,,+M,,,False,
 cord,receipt_081,receipt,real,total_price,money,50.000,50.000,0.98,0.98,True,0.98
@@ -2094,14 +2099,14 @@ cord,receipt_082,receipt,real,line_items[].name,text,Strawberry Log Cake,Strawbe
 cord,receipt_082,receipt,real,line_items[].quantity,number,2x,2x,0.99,0.99,True,0.99
 cord,receipt_082,receipt,real,line_items[].unit_price,money,"105,000","105,000",0.99,0.99,True,0.99
 cord,receipt_082,receipt,real,line_items[].price,money,"210,000","210,000",0.99,0.99,True,0.99
-cord,receipt_083,receipt,real,subtotal_price,money,20.909,"20,909",0.98,0.98,False,0.98
-cord,receipt_083,receipt,real,tax_price,money,2.091,"2,091",0.97,0.97,False,0.97
-cord,receipt_083,receipt,real,total_price,money,23.000,"23,000",0.98,0.98,False,0.98
+cord,receipt_083,receipt,real,subtotal_price,money,20.909,"20,909",0.98,0.98,True,0.98
+cord,receipt_083,receipt,real,tax_price,money,2.091,"2,091",0.97,0.97,True,0.97
+cord,receipt_083,receipt,real,total_price,money,23.000,"23,000",0.98,0.98,True,0.98
 cord,receipt_083,receipt,real,cash_price,money,25.000,25.000,0.97,0.96,True,0.96
 cord,receipt_083,receipt,real,change_price,money,2.000,2.000,0.97,0.97,True,0.97
 cord,receipt_083,receipt,real,line_items[].name,text,COOKIES AND CREAM,COOKIES AND CREAM,0.98,0.98,True,0.98
 cord,receipt_083,receipt,real,line_items[].quantity,number,1,1,0.98,0.98,True,0.98
-cord,receipt_083,receipt,real,line_items[].price,money,20.909,"20,909",0.98,0.98,False,0.98
+cord,receipt_083,receipt,real,line_items[].price,money,20.909,"20,909",0.98,0.98,True,0.98
 cord,receipt_084,receipt,real,subtotal_price,money,36.000,Rp 36.000,0.99,0.99,True,0.99
 cord,receipt_084,receipt,real,tax_price,money,3.600,Rp 3.600,0.99,0.99,True,0.99
 cord,receipt_084,receipt,real,total_price,money,39.600,Rp 39.600,0.99,0.99,True,0.99
@@ -2196,22 +2201,22 @@ cord,receipt_090,receipt,real,cash_price,money,"29,500","29,500",0.99,0.99,True,
 cord,receipt_090,receipt,real,line_items[].name,text,CIRENG PANDAWA,CIRENG PANDAWA,0.98,0.99,True,0.98
 cord,receipt_090,receipt,real,line_items[].quantity,number,1,1,0.97,0.98,True,0.97
 cord,receipt_090,receipt,real,line_items[].price,money,"26,818","26,818",0.99,0.99,True,0.99
-cord,receipt_091,receipt,real,total_price,money,"21,000",21.000,0.96,0.96,False,0.96
-cord,receipt_091,receipt,real,cash_price,money,"30,000",30.000,0.97,0.97,False,0.97
-cord,receipt_091,receipt,real,change_price,money,"9,000",9.000,0.96,0.96,False,0.96
+cord,receipt_091,receipt,real,total_price,money,"21,000",21.000,0.96,0.96,True,0.96
+cord,receipt_091,receipt,real,cash_price,money,"30,000",30.000,0.97,0.97,True,0.97
+cord,receipt_091,receipt,real,change_price,money,"9,000",9.000,0.96,0.96,True,0.96
 cord,receipt_091,receipt,real,line_items[].name,text,BAKSO BNGKS,BAKSO BNGKS,0.95,0.95,True,0.95
 cord,receipt_091,receipt,real,line_items[].quantity,number,1,1,0.95,0.95,True,0.95
-cord,receipt_091,receipt,real,line_items[].price,money,"15,000",15.000,0.96,0.96,False,0.96
+cord,receipt_091,receipt,real,line_items[].price,money,"15,000",15.000,0.96,0.96,True,0.96
 cord,receipt_091,receipt,real,line_items[].name,text,GORENGAN,GORENGAN,0.95,0.95,True,0.95
 cord,receipt_091,receipt,real,line_items[].quantity,number,6,6,0.95,0.95,True,0.95
-cord,receipt_091,receipt,real,line_items[].price,money,"6,000",6.000,0.95,0.95,False,0.95
+cord,receipt_091,receipt,real,line_items[].price,money,"6,000",6.000,0.95,0.95,True,0.95
 cord,receipt_092,receipt,real,total_price,money,240.000,240.000,0.98,0.98,True,0.98
 cord,receipt_092,receipt,real,cash_price,money,250.000,250.000,0.98,0.98,True,0.98
-cord,receipt_092,receipt,real,change_price,money,10.000,"10,000",0.98,0.98,False,0.98
+cord,receipt_092,receipt,real,change_price,money,10.000,"10,000",0.98,0.98,True,0.98
 cord,receipt_092,receipt,real,line_items[].name,text,901016 -TICKET CP,- TICKET CP,0.96,0.95,False,0.95
 cord,receipt_092,receipt,real,line_items[].quantity,number,4,4,0.97,0.97,True,0.97
 cord,receipt_092,receipt,real,line_items[].unit_price,money,60.000,60.000,0.98,0.97,True,0.97
-cord,receipt_092,receipt,real,line_items[].price,money,240.000,"240,000",0.98,0.98,False,0.98
+cord,receipt_092,receipt,real,line_items[].price,money,240.000,"240,000",0.98,0.98,True,0.98
 cord,receipt_093,receipt,real,subtotal_price,money,"16,363","16,363",0.98,0.98,True,0.98
 cord,receipt_093,receipt,real,tax_price,money,"1,636","1,636",0.98,0.97,True,0.97
 cord,receipt_093,receipt,real,total_price,money,"17,999","17,999",0.98,0.98,True,0.98

@@ -57,7 +57,7 @@ watches what happens to the confidence scores as the document gets harder to rea
 |---|---|
 | **0.85 is safe on clean documents and not on degraded ones** | 0% error on a clean PDF (288 fields accepted). 43% on a phone photo, where it accepts 30. |
 | **0.97 does not fix that; it stops answering** | 0% error on degraded tiers, but from 4 accepted fields out of 294. The interval on 0-of-4 reaches 49%. |
-| **The two scores are interchangeable** | Separation 0.835 / 0.828 / 0.823, intervals overlapping. `min()` of the pair, which the HITL skill gates on, is no better. |
+| **The two scores are interchangeable** | Separation 0.862 / 0.859 / 0.855, intervals overlapping. `min()` of the pair, which the HITL skill gates on, is no better. |
 | **Degradation flips the bias, not just the noise** | Scanned-and-noisy is *under*confident (-0.26), photographed is *over*confident (+0.07). Only one of those costs you accuracy. |
 | **Money fields break first, text survives** | On a phone photo: money 19% correct, IDs 35%, free text 84%. The fields worth extracting for are the ones that fail. |
 
@@ -263,8 +263,8 @@ Image.open(RESULTS / "figures" / "01_score_discrimination.png")
 
 md(
     """
-**All three are equivalent.** The point estimates differ (0.835, 0.828, 0.823) but the 95%
-bootstrap intervals overlap almost entirely: [0.810, 0.862], [0.802, 0.857], [0.794, 0.852].
+**All three are equivalent.** The point estimates differ (0.862, 0.859, 0.855) but the 95%
+bootstrap intervals overlap almost entirely: [0.834, 0.887], [0.833, 0.885], [0.827, 0.882].
 Ranking them on those point estimates would be reading noise.
 
 `grounding_score` and `extraction_score` answer different questions — was the value located,
@@ -512,7 +512,9 @@ md(
   that is what was measured.
 - **Scores move between runs** as Unsiloed's models change in production. Treat the figures
   as indicative of the *shape* of the finding (thresholds do not travel across document
-  quality) rather than as fixed targets.
+  quality) rather than as fixed targets. Results here are as of **2026-09-13**. This recipe
+  doesn't set its own re-run cadence — that's a maintainer call — it just puts the date on
+  record so the numbers don't quietly go stale unlabeled.
 
 ## Reproducing This
 

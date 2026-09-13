@@ -92,7 +92,7 @@ Same documents, four quality tiers:
 
 ### The analysis
 
-1. **Score discrimination**: Do grounding, extraction, or min(grounding, extraction) predict correctness better? Answer: they're equivalent (0.83 separation).
+1. **Score discrimination**: Do grounding, extraction, or min(grounding, extraction) predict correctness better? Answer: they're equivalent (~0.86 separation, intervals overlapping).
 
 2. **Reliability diagram**: As document quality drops, do scores become miscalibrated? Answer: yes, and in opposite directions. On T0/T1 the score barely varies at all — 288 of 294 clean-document fields sit in one 0.9-1.0 bucket, so there is no curve to draw. T2 is *under*confident (signed error -0.26) and T3 is *over*confident (+0.07). Note that ECE, which discards the sign, therefore ranks T2 as worse than T3 even though T3 is the tier that ships wrong values as correct.
 
@@ -107,13 +107,28 @@ Same documents, four quality tiers:
 All cached in `results/`:
 
 - **`figures/`**: Five PNG charts (discrimination, reliability, threshold sweep, fixed thresholds, accuracy by field type)
-- **`scored_fields.csv`**: Every extracted field vs ground truth (2,307 rows)
+- **`scored_fields.csv`**: Every extracted field vs ground truth (2,312 rows)
 - **`score_discrimination.csv`**: Which score predicts correctness
 - **`calibration_error.csv`**: Expected calibration error per tier, plus `signed_error` and `direction` — ECE takes an absolute value, so the sign is what tells you whether a tier is over- or underconfident
 - **`threshold_sweep.csv`**: Coverage and error per threshold per tier
 - **`sub_1pct_thresholds.csv`**: Minimum threshold to hit <1% error per tier
 - **`fixed_thresholds.csv`**: Error when using 0.85 and 0.97 across tiers, with Wilson intervals and the count actually accepted (`n_accepted`) — a 0% built from 4 fields and one built from 288 are not the same claim
 - **`field_type_accuracy.csv`**: Accuracy per field type per tier, with intervals — money and IDs collapse on photographed documents while text survives
+
+## Testing
+
+`calibration/compare.py` decides what counts as "correct" for every field in the corpus, so
+it is the actual epistemic foundation of every number in this recipe — a bug here silently
+changes headline findings rather than crashing loudly. `calibration/test_compare.py` covers
+the parsing and comparison rules directly, including the case that shipped broken in an
+earlier version of this PR: `_strip_money` treated every `.` as a decimal point, so "15.000"
+(an Indonesian thousands grouping) and "15,000" (the same value, comma-grouped) parsed to
+different floats and scored as a mismatch. Stdlib `unittest`, no extra dependency.
+
+```bash
+cd confidence-calibration
+python -m unittest calibration.test_compare -v
+```
 
 ## Architecture
 
@@ -127,6 +142,7 @@ corpus/
 calibration/
   ├── run.py                   # Extract every doc at every tier (resumable, cached)
   ├── compare.py               # Score fields against ground truth
+  ├── test_compare.py          # Unit tests for the scoring rules above
   └── analyse.py               # Generate five outputs + figures
 
 documents/
@@ -146,7 +162,7 @@ results/
 - **Synthetic documents are realistic but controlled.** Exact ground truth and varied degradation are impossible with real documents. Validity depends on T0 being readable and T3 being genuinely hard (both visually verified).
 - **CORD receipts are real but Indonesian.** Thermal paper, hand-written fields, shadows. Scores may not generalise to Western business documents; intent is external validity check.
 - **Thresholds are specific to this corpus.** A company's documents may need different numbers. The *methodology* is the reusable part.
-- **Scores drift between runs.** Unsiloed's models improve in production. Numbers are indicative; the *shape of findings* (thresholds don't travel) is durable.
+- **Scores drift between runs.** Unsiloed's models improve in production. Numbers are indicative; the *shape of findings* (thresholds don't travel) is durable. Results here are as of **2026-09-13**, against whatever `/v2/extract` served that day. This recipe doesn't decide its own re-run cadence — that's a maintainer call (quarterly re-run, a pinned "results as of" note, or accept it drifts) — it just makes sure the date is on record instead of the numbers quietly going stale unlabeled.
 - **Some cells are thin.** At 0.85 the T3 accepted set is 30 fields and at 0.97 it is 4. Figures mark anything under 30 as unreliable (dotted lines, wide intervals) rather than hiding it. Treat the direction of these findings as solid and the second decimal place as noise.
 
 ## Related

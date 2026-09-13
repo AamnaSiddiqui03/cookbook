@@ -22,7 +22,20 @@ from datetime import date, datetime
 
 
 def _strip_money(text) -> str | None:
-    """Digits, sign and one decimal point; currency symbols and separators discarded."""
+    """Digits, sign and one decimal point; currency symbols and separators discarded.
+
+    Neither "," nor "." has a fixed meaning across locales, so the previous version's bug was
+    trusting "." unconditionally: CORD's Indonesian receipts print "." as a thousands separator
+    with no decimal subunit ("15.000" = 15000), so "15.000" (extracted) and "15,000" (ground
+    truth) parsed to 15.0 and 15000.0 - the same real value scored as a mismatch. This also
+    silently corrupted "Rp. 91,000" (the "." from the "Rp." abbreviation survives the regex
+    below) into 0.91 instead of 91000.
+
+    Rule: whichever of "," or "." is rightmost is the decimal point candidate, and it only
+    counts as one if exactly 1-2 digits follow it. Otherwise every "," and "." present is a
+    separator (or noise) and gets discarded. This matches both "1,401.42" (US) and "1.401,42"
+    (EU/ID) while treating "15.000" and "Rp. 91,000" as pure thousands groupings.
+    """
     if text is None:
         return None
     cleaned = re.sub(r"[^\d.,\-]", "", str(text))
@@ -30,14 +43,24 @@ def _strip_money(text) -> str | None:
     cleaned = cleaned.strip("-")
     if not cleaned:
         return None
-    # Decide whether "," is a thousands separator or a decimal point. A comma followed by
-    # exactly two trailing digits, with no "." anywhere, is treated as decimal — matching how
-    # CORD's Indonesian receipts are punctuated. Everything else is a thousands separator.
-    if "," in cleaned and "." not in cleaned:
-        head, _, tail = cleaned.rpartition(",")
-        cleaned = f"{head.replace(',', '')}.{tail}" if len(tail) == 2 and head else cleaned.replace(",", "")
+
+    has_comma, has_dot = "," in cleaned, "." in cleaned
+    if has_comma and has_dot:
+        decimal_char = "," if cleaned.rfind(",") > cleaned.rfind(".") else "."
+    elif has_comma:
+        decimal_char = ","
+    elif has_dot:
+        decimal_char = "."
     else:
-        cleaned = cleaned.replace(",", "")
+        decimal_char = None
+
+    if decimal_char:
+        head, _, tail = cleaned.rpartition(decimal_char)
+        if len(tail) in (1, 2) and head:
+            cleaned = f"{re.sub(r'[.,]', '', head)}.{tail}"
+        else:
+            cleaned = re.sub(r"[.,]", "", cleaned)
+
     try:
         value = float(cleaned)
     except ValueError:
