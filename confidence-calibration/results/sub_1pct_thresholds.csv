@@ -1,0 +1,5 @@
+tier,threshold,coverage,note
+t0,0.5,0.9897959183673469,
+t1,0.5,0.9897959183673469,
+t2,0.92,0.04421768707482993,
+t3,,,not reached in this corpus

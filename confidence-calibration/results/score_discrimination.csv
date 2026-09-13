@@ -1,0 +1,4 @@
+score,separation,n_correct,n_wrong
+grounding_score,0.827998189284444,2028,244
+extraction_score,0.8349348869919487,2028,244
+"min(grounding, extraction)",0.8231945387525463,2028,244
